@@ -70,6 +70,7 @@ for i, row in DB.iterrows():
 
 
 seen = set()
+newwords = set(newdata.Eng)
 for i, row in newdata.iterrows():
     if row.Eng in engdict:
         engcounter[row.Eng] += 1
@@ -157,17 +158,23 @@ for j in range(data.shape[-1]-1):
 
 # add the rest of the data frame
 check = False
+newreg = False
 for i in tqdm.tqdm(range(data.shape[0])):
+    check = False
+    newreg = False
     if str(data.values[i,0]) in seen:
         check = True
-    else:
-        check = False
+    if str(data.values[i,0] in newwords):
+        newreg = True
     for j in range(data.shape[-1]-1):
         cell = table_fq.cell(i+1,j)
         cell.text = str(data.values[i,j])
         if check:
             run = cell.paragraphs[0].runs[0]
             run.font.color.rgb = RGBColor(0xFF, 0x00, 0x00)
+        elif newreg:
+            run = cell.paragraphs[0].runs[0]
+            run.font.color.rgb = RGBColor(0x00, 0x00, 0xFF)
         
 
 for row in table_fq.rows:
