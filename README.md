@@ -19,10 +19,12 @@ Foreign word should located on first column and translation should locate on sec
 Whenever you write and save the `bookname_new.xlsx` file, run the program to update your vocabulary file.
 
 * Input Example
-![image of input](https://github.com/fenneccat/Dictionary-Converter/blob/master/images/new_data.jpg)
+
+![image of input](https://github.com/fenneccat/Dictionary-Converter/blob/master/images/new_data.JPG)
 
 DataBase will be automatically generated. You don't have to care about it. DB looks like bellow
 * Database example
+
 ![image of DB](https://github.com/fenneccat/Dictionary-Converter/blob/master/images/DB.JPG)
 
 In first section, newly added words are listed with blue color.
@@ -33,6 +35,7 @@ Some words are turn red when newly saved word is already registered on your Dict
 In third section, all words that you wrote is sorted in alphabet order.
 
 * Generated Vocabulary File
-![image of word](https://github.com/fenneccat/Dictionary-Converter/blob/master/images/screen.jpg)
+
+![image of word](https://github.com/fenneccat/Dictionary-Converter/blob/master/images/screen.JPG)
 
 Enjoy your language learning!
