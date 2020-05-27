@@ -18,11 +18,21 @@ Foreign word should located on first column and translation should locate on sec
 
 Whenever you write and save the `bookname_new.xlsx` file, run the program to update your vocabulary file.
 
+* Input Example
+![image of input](https://github.com/fenneccat/Dictionary-Converter/images/new_data.jpg)
+
+DataBase will be automatically generated. You don't have to care about it. DB looks like bellow
+* Database example
+![image of DB](https://github.com/fenneccat/Dictionary-Converter/images/DB.jpg)
+
 In first section, newly added words are listed with blue color.
 
 In bookname_Dictionary MS Words file, words are sorted in confusing order (frequency of wrting certain word) in second section.
 Some words are turn red when newly saved word is already registered on your Dictionary already.
 
 In third section, all words that you wrote is sorted in alphabet order.
+
+* Generated Vocabulary File
+![image of word](https://github.com/fenneccat/Dictionary-Converter/images/screen.jpg)
 
 Enjoy your language learning!
