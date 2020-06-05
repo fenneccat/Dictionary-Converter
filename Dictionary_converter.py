@@ -3,7 +3,6 @@
 
 # In[1]:
 
-
 bookname = input('Put book/movie name: ')
 bookname = '_'.join(bookname.split())
 
@@ -19,7 +18,9 @@ from os import path
 
 from datetime import datetime
 
+newflag = False
 if not os.path.exists(bookname):
+    newflag = True
     print('[{}] Create folders and files that you need'.format(datetime.now().time()))
     os.makedirs(bookname)
     pathprefix = './'+bookname+'/'
@@ -29,12 +30,41 @@ if not os.path.exists(bookname):
     nondf.to_excel('./' + bookname + '/' + bookname + '_new.xlsx', index=False)
     f = open('./' + bookname + '/' + bookname + '_DB.csv', 'w')
     f.close()
+    print('[{}] New book/movie folder is generated. Select the languages that you\'re gonna use...'.format(datetime.now().time()))
+    srclang = input('Enter Source Language (Learning Language): ')
+    tgtlang = input('Enter Target Language (Native Language): ')
+    srclang = srclang[0].upper()+srclang[1:]
+    tgtlang = tgtlang[0].upper() + tgtlang[1:]
 
 # In[3]:
 
+try:
+    DB=pd.read_csv('./'+bookname+'/'+bookname+'_DB.csv')
+    print('[{}] Loading DB file complete'.format(datetime.now().time(), bookname))
+    srclang = DB.columns[0]
+    tgtlang = DB.columns[1]
+
+except:
+    if not newflag:
+        print('[{}] Oops! {} DB seems deleted'.format(datetime.now().time(), bookname))
+        print('Select the languages that you\'re gonna use to build a DB again..')
+        srclang = input('Enter Source Language (Learning Language): ')
+        tgtlang = input('Enter Target Language (Native Language): ')
+        srclang = srclang[0].upper() + srclang[1:]
+        tgtlang = tgtlang[0].upper() + tgtlang[1:]
+
+    if not os.path.exists('./' + bookname + '/' + bookname + '_DB.csv'):
+        print('{}_DB.csv file doesn\'t exist'.format(bookname))
+        print('[{}] Creating {}_DB.csv file...'.format(datetime.now().time(), bookname))
+    f = open('./'+bookname+'/'+bookname+'_DB.csv' , 'w')
+    DB = pd.DataFrame(columns = [srclang,tgtlang,'cnt'])
+    DB.to_csv('./' + bookname + '/' + bookname + '_DB.csv', index=False, encoding='utf-8-sig')
+
+    f.close()
+
 
 try:
-    newdata = pd.read_excel('./'+bookname+'/'+bookname+'_new.xlsx',header = None, names = ['Eng','Kor'], sep=",\t")
+    newdata = pd.read_excel('./'+bookname+'/'+bookname+'_new.xlsx',header = None, names = ['src','tgt'], sep=",\t")
     print('[{}] Reading {}_new.xlsx file complete'.format(datetime.now().time(), bookname))
 except:
     if not os.path.exists('./'+bookname+'/'+bookname+'_new.xlsx'):
@@ -43,7 +73,7 @@ except:
     #f=open('./' + bookname + '/' + bookname + '_new.xslx','w')
     nondf = pd.DataFrame()
     nondf.to_excel('./' + bookname + '/' + bookname + '_new.xlsx', index=False)
-    newdata = pd.DataFrame(columns = ['Eng','Kor'])
+    newdata = pd.DataFrame(columns = ['src','tgt'])
 
 if newdata.empty:
     print('[{}] {}_new.xlsx file is empty!'.format(datetime.now().time(), bookname))
@@ -51,60 +81,49 @@ if newdata.empty:
     sys.exit()
 
 
-try:
-    DB=pd.read_csv('./'+bookname+'/'+bookname+'_DB.csv')
-    print('[{}] Loading DB file complete'.format(datetime.now().time(), bookname))
-except:
-    if not os.path.exists('./' + bookname + '/' + bookname + '_DB.csv'):
-        print('{}_DB.csv file doesn\'t exist'.format(bookname))
-        print('[{}] Creating {}_DB.csv file...'.format(datetime.now().time(), bookname))
-    f = open('./'+bookname+'/'+bookname+'_DB.csv' , 'w')
-    DB = pd.DataFrame(columns = ['Eng','Kor'])
-    f.close()
-
 # In[4]:
 
 
 print('[{}] Building Dictionary...'.format(datetime.now().time()))
 
 from collections import Counter
-engdict = dict()
-engcounter = Counter()
+srcwdict = dict()
+srcwcounter = Counter()
 for i, row in DB.iterrows():
-    engdict[row.Eng] = row.Kor
-    engcounter[row.Eng] = row.cnt
+    srcwdict[row[srclang]] = row[tgtlang]
+    srcwcounter[row[srclang]] = row.cnt
 
 
 # In[5]:
 
 
 seen = set()
-newwords = set(newdata.Eng)
+newwords = set(newdata.src)
 for i, row in newdata.iterrows():
-    if row.Eng in engdict:
-        engcounter[row.Eng] += 1
-        seen.add(row.Eng)
+    if row.src in srcwdict:
+        srcwcounter[row.src] += 1
+        seen.add(row.src)
     else:
-        engdict[row.Eng] = row.Kor
-        engcounter[row.Eng] = 1
+        srcwdict[row.src] = row.tgt
+        srcwcounter[row.src] = 1
 
 
 # In[6]:
 
 
-englst = []
-korlst = []
+srclst = []
+tgtlst = []
 cntlst = []
-for eng, kor in engdict.items():
-    englst.append(eng)
-    korlst.append(kor)
-    cntlst.append(engcounter[eng])
+for srcw, tgtw in srcwdict.items():
+    srclst.append(srcw)
+    tgtlst.append(tgtw)
+    cntlst.append(srcwcounter[srcw])
 
 
 # In[7]:
 
 
-data = pd.DataFrame({'Eng': englst,'Kor': korlst,'cnt': cntlst})
+data = pd.DataFrame({srclang: srclst, tgtlang: tgtlst,'cnt': cntlst})
 
 
 
@@ -137,8 +156,9 @@ p = document.add_heading('Newly added words',level=1)
 table_new = document.add_table(newdata.shape[0]+1, newdata.shape[1])
 hdr_cells = table_new.rows[0].cells
 
+languages = [srclang, tgtlang]
 for j in range(newdata.shape[1]):
-    run = hdr_cells[j].paragraphs[0].add_run(newdata.columns[j])
+    run = hdr_cells[j].paragraphs[0].add_run(languages[j])
     run.bold = True
     run.underline = True
 
@@ -195,7 +215,7 @@ for row in table_fq.rows:
     row.height = Cm(height)
 
 
-data["lower"] = data["Eng"].str.lower()
+data["lower"] = data[srclang].str.lower()
 data.sort_values(['lower'], axis=0, ascending=True, inplace=True)
 del data['lower']
 save_data = data.copy()
@@ -204,21 +224,42 @@ del data['cnt']
 # In[14]:
 
 
-data['startletter'] = data.Eng.str[0].str.lower()
+'''
+Chosung extractor
+Get code from https://frhyme.github.io/python/python_korean_englished/ and modify
+'''
+
+# 초성 리스트. 00 ~ 18
+CHOSUNG_LIST = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']
+
+
+def get_first_letter(word):
+    r_lst = []
+    w = word[0]
+        ## 영어인 경우 구분해서 작성함.
+    if '가' <= w <= '힣':
+        ## 588개 마다 초성이 바뀜.
+        ch1 = (ord(w) - ord('가')) // 588
+        return CHOSUNG_LIST[ch1]
+    else:
+        return w
+
+data['startletter'] = list(map(get_first_letter, data[srclang].str[0].str.lower()))
 print('[{}] word dictionary part...'.format(datetime.now().time()))
 p = document.add_heading('Word Dictionary',level=1)
 data_group_letter = data.groupby('startletter')
-for i in range(26):
-    ch = chr(ord('a')+i)
+existletters = sorted(data_group_letter.groups.keys())
+for ch in existletters:
+    #ch = chr(ord('a')+i)
     if ch in data_group_letter.groups.keys():
         p = document.add_heading(ch.upper(),level=2)
         groupdata = data_group_letter.get_group(ch)
 
-        table_dict = document.add_table(groupdata.shape[0], groupdata.shape[1]-2)
+        table_dict = document.add_table(groupdata.shape[0], groupdata.shape[1]-1)
 
         # add the rest of the data frame
         for i in range(groupdata.shape[0]):
-            for j in range(groupdata.shape[-1]-2):
+            for j in range(groupdata.shape[-1]-1):
                 table_dict.cell(i,j).text = str(groupdata.values[i,j])
         
         for row in table_dict.rows:
