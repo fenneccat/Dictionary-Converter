@@ -12,7 +12,7 @@ python Dictionary_converter.py
 You need to install `python-docx` library
 
 ## Fucntion Explanation
-If you put a name of book or movie after you run the program, it will automatically create the folder and files. 
+If you put a name of a book or movie after you run the program, it will automatically create the folder and files. 
 
 When you first put a book/movie name, it will ask what language do you want to learn. Source Language (Learning Language) is a language of contents (book, movie, etc) and Target Language (Native Language) is a language of that you knows well. 
 
